@@ -1,0 +1,10 @@
+# macOS
+.DS_Store
+
+# 대용량 파일 (PPT 원본은 링크로 관리 권장)
+# *.pptx
+
+# 임시 파일
+*.tmp
+*~
+Thumbs.db
