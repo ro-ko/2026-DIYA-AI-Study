@@ -4,8 +4,7 @@
 **날짜:** 2026-05-20  
 **원본 링크:** [논문 링크]()  
 **발표 자료:**
-- [슬라이드](AI_Auto_Research_Presentation.html)
-- [웹사이트](https://worldbench.github.io/awesome-ai-auto-research#lifecycle)
+- [블로그 정리](https://deep-data-developer.tistory.com/22)
 
 ---
 
