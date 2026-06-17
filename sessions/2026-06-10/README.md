@@ -4,8 +4,8 @@
 
 | 발표자 | 논문 제목 | 자료 |
 |--------|-----------|------|
-| -      | -         | -    |
-| -      | -         | -    |
+| -      | -         | [슬라이드](graphcompliance/GraphCompliance_seminar.pptx) |
+| -      | -         | [슬라이드](mirage/Mirage_seminar.html) |
 
 ## 메모
 

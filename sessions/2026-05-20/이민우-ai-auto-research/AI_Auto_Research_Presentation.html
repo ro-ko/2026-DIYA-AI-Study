@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI for Auto-Research — 논문 세미나</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600;9..144,800;9..144,900&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg-2: #12121a;
+    --bg-3: #1a1a24;
+    --ink: #f5f0e8;
+    --ink-dim: #a8a397;
+    --ink-deep: #6b6657;
+    --accent: #ff5722;
+    --accent-2: #f5d547;
+    --accent-3: #4ecdc4;
+    --line: rgba(245, 240, 232, 0.08);
+    --serif: 'Fraunces', Georgia, serif;
+    --sans: 'Noto Sans KR', -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.7;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ========== HERO ========== */
+  .hero {
+    min-height: 100vh;
+    padding: 80px 6vw 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    border-bottom: 1px solid var(--line);
+    overflow: hidden;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    top: -200px;
+    right: -200px;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(255, 87, 34, 0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 2;
+  }
+
+  .hero-top span { display: block; }
+  .hero-top .label { color: var(--accent); }
+
+  .hero-main {
+    position: relative;
+    z-index: 2;
+    margin: auto 0;
+    padding: 60px 0;
+  }
+
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent-2);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .hero-eyebrow::before {
+    content: '';
+    width: 40px;
+    height: 1px;
+    background: var(--accent-2);
+  }
+
+  .hero h1 {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: clamp(48px, 8vw, 128px);
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    margin-bottom: 32px;
+    font-variation-settings: "opsz" 144;
+  }
+
+  .hero h1 .em {
+    font-style: italic;
+    font-weight: 900;
+    color: var(--accent);
+  }
+
+  .hero h1 .underline {
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+    text-underline-offset: 12px;
+    text-decoration-color: var(--accent-2);
+  }
+
+  .hero-sub {
+    font-family: var(--sans);
+    font-size: clamp(18px, 1.8vw, 24px);
+    color: var(--ink-dim);
+    font-weight: 300;
+    max-width: 800px;
+    line-height: 1.5;
+  }
+
+  .hero-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 40px;
+    position: relative;
+    z-index: 2;
+    flex-wrap: wrap;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 60px;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    border-left: 1px solid var(--line);
+    padding-left: 16px;
+  }
+
+  .stat-num {
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 48px;
+    color: var(--ink);
+    line-height: 1;
+    font-variation-settings: "opsz" 144;
+  }
+
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  .scroll-cue {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    animation: bob 2s ease-in-out infinite;
+  }
+
+  @keyframes bob {
+    0%, 100% { transform: rotate(180deg) translateX(0); }
+    50% { transform: rotate(180deg) translateX(8px); }
+  }
+
+  /* ========== SECTIONS ========== */
+  section {
+    padding: 120px 6vw;
+    border-bottom: 1px solid var(--line);
+    position: relative;
+    z-index: 2;
+  }
+
+  .section-num {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .section-title {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: clamp(40px, 5vw, 72px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 48px;
+    max-width: 1100px;
+  }
+
+  .section-title em {
+    font-style: italic;
+    font-weight: 800;
+    color: var(--accent-2);
+  }
+
+  .section-lead {
+    font-family: var(--serif);
+    font-size: clamp(22px, 2.2vw, 32px);
+    line-height: 1.4;
+    color: var(--ink);
+    max-width: 900px;
+    margin-bottom: 64px;
+    font-weight: 300;
+  }
+
+  .section-lead strong {
+    font-weight: 600;
+    color: var(--accent);
+    font-style: italic;
+  }
+
+  p {
+    font-size: 17px;
+    line-height: 1.75;
+    color: var(--ink-dim);
+    max-width: 75ch;
+    margin-bottom: 20px;
+  }
+
+  p strong { color: var(--ink); font-weight: 600; }
+  p em { color: var(--accent-2); font-style: italic; }
+
+  /* ========== TEASER IMAGE ========== */
+  .teaser-figure {
+    margin: 60px 0;
+    padding: 32px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+  }
+
+  .teaser-figure img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 2px;
+  }
+
+  .figure-caption {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-dim);
+    letter-spacing: 0.05em;
+    margin-top: 20px;
+    line-height: 1.6;
+    padding-left: 16px;
+    border-left: 2px solid var(--accent);
+  }
+
+  .figure-caption strong { color: var(--accent-2); }
+
+  /* ========== 4 PHASE OVERVIEW ========== */
+  .phases-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1px;
+    background: var(--line);
+    margin: 60px 0;
+    border: 1px solid var(--line);
+  }
+
+  .phase-card {
+    background: var(--bg-2);
+    padding: 40px 32px;
+    position: relative;
+    transition: background 0.4s ease;
+  }
+
+  .phase-card:hover {
+    background: var(--bg-3);
+  }
+
+  .phase-num {
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 80px;
+    line-height: 1;
+    color: var(--accent);
+    margin-bottom: 16px;
+    font-variation-settings: "opsz" 144;
+    font-style: italic;
+  }
+
+  .phase-card:nth-child(2) .phase-num { color: var(--accent-2); }
+  .phase-card:nth-child(3) .phase-num { color: var(--accent-3); }
+  .phase-card:nth-child(4) .phase-num { color: #ff77c0; }
+
+  .phase-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .phase-name {
+    font-family: var(--serif);
+    font-size: 32px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    letter-spacing: -0.01em;
+  }
+
+  .phase-desc {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ink-dim);
+  }
+
+  .phase-stages {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-deep);
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px dashed var(--line);
+  }
+
+  /* ========== STAGE BLOCKS ========== */
+  .stage-block {
+    margin: 80px 0;
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 60px;
+    align-items: start;
+  }
+
+  @media (max-width: 900px) {
+    .stage-block {
+      grid-template-columns: 1fr;
+      gap: 30px;
+    }
+  }
+
+  .stage-visual {
+    position: relative;
+  }
+
+  .stage-visual img {
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+    border: 1px solid var(--line);
+    background: var(--bg-2);
+    padding: 16px;
+  }
+
+  .stage-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border: 1px solid var(--accent);
+    border-radius: 100px;
+    margin-bottom: 20px;
+  }
+
+  .stage-name {
+    font-family: var(--serif);
+    font-size: 42px;
+    font-weight: 400;
+    line-height: 1.1;
+    margin-bottom: 24px;
+    letter-spacing: -0.01em;
+  }
+
+  .stage-name em {
+    font-style: italic;
+    color: var(--accent-2);
+    font-weight: 800;
+  }
+
+  .stage-content > p { margin-bottom: 24px; }
+
+  /* ========== INSIGHT BOXES ========== */
+  .insight-box {
+    background: linear-gradient(135deg, var(--bg-2) 0%, var(--bg-3) 100%);
+    padding: 32px;
+    margin: 32px 0;
+    border-left: 3px solid var(--accent);
+    border-radius: 0 4px 4px 0;
+    position: relative;
+  }
+
+  .insight-box::before {
+    content: '⚡';
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    font-size: 24px;
+    opacity: 0.4;
+  }
+
+  .insight-box h4 {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent-2);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .insight-box p {
+    color: var(--ink);
+    font-size: 16px;
+    margin: 0;
+  }
+
+  .insight-box .num-highlight {
+    font-family: var(--serif);
+    font-weight: 900;
+    font-style: italic;
+    color: var(--accent);
+    font-size: 1.2em;
+  }
+
+  /* ========== STATS CONTRAST ========== */
+  .contrast-stats {
+    display: grid;
+    grid-template-columns: 1fr 80px 1fr;
+    gap: 24px;
+    align-items: center;
+    margin: 40px 0;
+    padding: 40px;
+    background: var(--bg-2);
+    border-radius: 4px;
+    border: 1px solid var(--line);
+  }
+
+  @media (max-width: 700px) {
+    .contrast-stats {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+    .contrast-vs { transform: none !important; }
+  }
+
+  .contrast-side { text-align: center; }
+  .contrast-side.good { color: var(--accent-3); }
+  .contrast-side.bad { color: var(--accent); }
+
+  .contrast-num {
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: clamp(48px, 6vw, 96px);
+    line-height: 1;
+    font-variation-settings: "opsz" 144;
+    font-style: italic;
+  }
+
+  .contrast-label {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 12px;
+  }
+
+  .contrast-vs {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 32px;
+    color: var(--ink-deep);
+    text-align: center;
+    transform: rotate(-15deg);
+  }
+
+  /* ========== CROSS-CUTTING INSIGHTS ========== */
+  .insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+    margin: 60px 0;
+  }
+
+  .insight-card {
+    background: var(--bg-2);
+    padding: 36px 32px;
+    border-radius: 4px;
+    position: relative;
+    border: 1px solid var(--line);
+    overflow: hidden;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+  }
+
+  .insight-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent);
+  }
+
+  .insight-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--accent);
+  }
+
+  .insight-card:nth-child(2)::before { background: var(--accent-2); }
+  .insight-card:nth-child(3)::before { background: var(--accent-3); }
+  .insight-card:nth-child(4)::before { background: #ff77c0; }
+  .insight-card:nth-child(5)::before { background: #a78bfa; }
+
+  .insight-card-num {
+    font-family: var(--serif);
+    font-weight: 900;
+    font-style: italic;
+    font-size: 60px;
+    line-height: 1;
+    color: var(--ink-deep);
+    margin-bottom: 16px;
+    font-variation-settings: "opsz" 144;
+  }
+
+  .insight-card h3 {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 16px;
+    color: var(--ink);
+  }
+
+  .insight-card p {
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0;
+    color: var(--ink-dim);
+  }
+
+  /* ========== METHODOLOGY TABLE ========== */
+  .method-flow {
+    background: var(--bg-2);
+    padding: 40px;
+    border-radius: 4px;
+    margin: 40px 0;
+    overflow-x: auto;
+  }
+
+  .method-flow-grid {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-width: max-content;
+    font-family: var(--mono);
+    font-size: 14px;
+  }
+
+  .method-node {
+    padding: 16px 20px;
+    background: var(--bg-3);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+
+  .method-node:hover {
+    border-color: var(--accent-2);
+    background: var(--bg);
+  }
+
+  .method-node strong {
+    display: block;
+    color: var(--accent-2);
+    margin-bottom: 4px;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .method-node span {
+    color: var(--ink-dim);
+    font-size: 12px;
+  }
+
+  .method-arrow {
+    color: var(--accent);
+    font-size: 24px;
+    font-family: var(--serif);
+  }
+
+  /* ========== TAKEAWAY ========== */
+  .takeaway-section {
+    background: var(--bg-2);
+    padding: 80px 6vw;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .takeaway-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    max-width: 1400px;
+    margin: 60px auto 0;
+  }
+
+  @media (max-width: 900px) {
+    .takeaway-grid { grid-template-columns: 1fr; }
+  }
+
+  .takeaway-column h3 {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .takeaway-column ol {
+    list-style: none;
+    counter-reset: takeaway;
+  }
+
+  .takeaway-column ol li {
+    counter-increment: takeaway;
+    padding: 20px 0 20px 60px;
+    position: relative;
+    border-bottom: 1px dashed var(--line);
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .takeaway-column ol li::before {
+    content: counter(takeaway, decimal-leading-zero);
+    position: absolute;
+    left: 0;
+    top: 20px;
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 900;
+    font-size: 28px;
+    color: var(--accent-2);
+    line-height: 1;
+  }
+
+  .takeaway-column ol li strong {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* ========== DISCUSSION ========== */
+  .discussion {
+    padding: 80px 6vw;
+  }
+
+  .discussion ul {
+    list-style: none;
+    max-width: 1100px;
+    margin-top: 40px;
+  }
+
+  .discussion ul li {
+    padding: 28px 0;
+    border-top: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .discussion ul li:last-child { border-bottom: 1px solid var(--line); }
+
+  .discussion .q-mark {
+    font-family: var(--serif);
+    font-weight: 900;
+    font-style: italic;
+    font-size: 56px;
+    color: var(--accent);
+    line-height: 0.8;
+    font-variation-settings: "opsz" 144;
+  }
+
+  .discussion .q-text {
+    font-family: var(--serif);
+    font-size: 20px;
+    line-height: 1.5;
+    color: var(--ink);
+    font-weight: 300;
+  }
+
+  .discussion .q-text em {
+    font-style: italic;
+    color: var(--accent-2);
+    font-weight: 600;
+  }
+
+  /* ========== FOOTER ========== */
+  footer {
+    padding: 60px 6vw 40px;
+    text-align: center;
+    border-top: 1px solid var(--line);
+    background: var(--bg);
+  }
+
+  footer p {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-deep);
+    letter-spacing: 0.1em;
+    margin: 8px auto;
+  }
+
+  footer a {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px dashed var(--accent);
+  }
+
+  /* ========== ANIMATIONS ========== */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-in {
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards;
+  }
+
+  .fade-in.delay-1 { animation-delay: 0.1s; }
+  .fade-in.delay-2 { animation-delay: 0.2s; }
+  .fade-in.delay-3 { animation-delay: 0.3s; }
+  .fade-in.delay-4 { animation-delay: 0.4s; }
+
+  /* Sticky section navigation marker */
+  .section-marker {
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    padding: 12px 6vw;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    backdrop-filter: blur(10px);
+    background: rgba(10, 10, 15, 0.85);
+  }
+
+  .section-marker .current { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- ============== HERO ============== -->
+<section class="hero">
+  <div class="hero-top fade-in">
+    <div>
+      <span class="label">Paper Seminar</span>
+      <span>arXiv:2605.18661 · May 2026</span>
+    </div>
+    <div style="text-align: right;">
+      <span class="label">읽는 시간</span>
+      <span>약 12분</span>
+    </div>
+  </div>
+
+  <div class="hero-main">
+    <div class="hero-eyebrow fade-in delay-1">AI for Auto-Research · Roadmap & User Guide</div>
+    <h1 class="fade-in delay-2">
+      AI는 논문을<br>
+      <span class="em">$15</span>에 쓰지만,<br>
+      그게 <span class="underline">진짜 연구</span>인지는<br>
+      <em class="em">알지 못한다.</em>
+    </h1>
+    <p class="hero-sub fade-in delay-3">
+      AI 보조 연구가 임계점을 넘었다. 그러나 생성 능력의 폭주 뒤에는 검증·판단·책임의 공백이 자라고 있다.
+      이 논문은 그 간극을 해부한다.
+    </p>
+  </div>
+
+  <div class="hero-bottom fade-in delay-4">
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-num">250+</div>
+        <div class="stat-label">Papers Surveyed</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">4</div>
+        <div class="stat-label">Lifecycle Phases</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">8</div>
+        <div class="stat-label">Research Stages</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">5</div>
+        <div class="stat-label">Central Findings</div>
+      </div>
+    </div>
+    <div class="scroll-cue">Scroll · 발표 시작</div>
+  </div>
+</section>
+
+<!-- ============== WHY NOW ============== -->
+<section>
+  <div class="section-num">01 · Why This Matters Now</div>
+  <h2 class="section-title">왜 <em>지금</em> 이 논문인가</h2>
+
+  <p class="section-lead">
+    최근 1~2년 사이, AI는 "연구의 한 단계를 돕는 도구"에서
+    <strong>"전체 연구 라이프사이클을 오케스트레이션하는 주체"</strong>로 도약했다.
+  </p>
+
+  <p>아래는 이 도약의 충격적 증거들이다:</p>
+
+  <div class="insight-box">
+    <h4>The AI Scientist</h4>
+    <p><span class="num-highlight">$15</span>에 논문 한 편을 end-to-end로 생성. 아이디어 → 실험 → 작성 → 리뷰까지.</p>
+  </div>
+
+  <div class="insight-box">
+    <h4>FARS</h4>
+    <p><span class="num-highlight">228시간</span> 연속 가동, 11.4B 토큰 소비, <span class="num-highlight">100편</span>의 논문을 자동 생성 — 2.3시간당 1편.</p>
+  </div>
+
+  <div class="insight-box">
+    <h4>ARIS</h4>
+    <p>하룻밤에 <span class="num-highlight">20개 GPU 실험</span>을 돌리고, 리뷰 점수를 5.0 → 7.5로 자동 개선.</p>
+  </div>
+
+  <p style="margin-top: 40px; font-family: var(--serif); font-size: 24px; font-style: italic; color: var(--accent-2); line-height: 1.5;">
+    "AI가 논문의 <em>형식</em>을 만들 수 있는가?" → ✅ Yes<br>
+    "AI가 논문의 <em>본질</em>(증거·판단·책임)을 보존하는가?" → ❌ 여기서 막힌다.
+  </p>
+</section>
+
+<!-- ============== TEASER FIGURE ============== -->
+<section>
+  <div class="section-num">02 · Big Picture</div>
+  <h2 class="section-title">연구 라이프사이클의 <em>전체 지도</em></h2>
+
+  <p class="section-lead">
+    이 논문의 가장 큰 기여는 흩어져 있던 AI 연구 도구들을
+    <strong>하나의 통합된 라이프사이클 지도</strong>로 묶었다는 점이다.
+  </p>
+
+  <div class="teaser-figure">
+    <img src="https://worldbench.github.io/assets/auto-research/figures/teaser_paper.png" alt="AI auto-research lifecycle overview">
+    <div class="figure-caption">
+      <strong>Figure 1.</strong> 4 phases × 8 stages — Creation(아이디어·문헌·코드·시각화) → Writing(논문 작성) → Validation(피어리뷰·리버틀) → Dissemination(포스터·슬라이드·영상·소셜·에이전트). 화살표는 단방향이 아니라 피드백 루프를 형성한다.
+    </div>
+  </div>
+
+  <div class="phases-grid">
+    <div class="phase-card">
+      <div class="phase-num">1</div>
+      <div class="phase-label">Phase 1 · Stages 1–4</div>
+      <div class="phase-name">Creation</div>
+      <div class="phase-desc">연구 기여를 <em>물질적으로 생산</em>하는 단계. 아이디어를 만들고, 문헌으로 위치시키고, 코드로 구현하고, 시각화한다.</div>
+      <div class="phase-stages">S1 Ideation · S2 Literature · S3 Code · S4 Figures</div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-num">2</div>
+      <div class="phase-label">Phase 2 · Stage 5</div>
+      <div class="phase-name">Writing</div>
+      <div class="phase-desc">Creation의 산출물을 <em>학술적 논증</em>으로 조직. 단순 포맷팅이 아닌 수사적·증거적 구성 작업이다.</div>
+      <div class="phase-stages">S5 Paper Writing</div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-num">3</div>
+      <div class="phase-label">Phase 3 · Stages 6–7</div>
+      <div class="phase-name">Validation</div>
+      <div class="phase-desc">학계의 <em>적대적 평가</em>를 거치는 검증 단계. 피어리뷰와 리버틀이 함께 검증 레이어를 형성한다.</div>
+      <div class="phase-stages">S6 Peer Review · S7 Rebuttal</div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-num">4</div>
+      <div class="phase-label">Phase 4 · Stage 8</div>
+      <div class="phase-name">Dissemination</div>
+      <div class="phase-desc">논문을 <em>더 넓은 청중</em>에게 전달. 포스터·슬라이드·영상·소셜·인터랙티브 에이전트 등 독립된 지식 산출물.</div>
+      <div class="phase-stages">S8 Paper2X</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== METHODOLOGY EVOLUTION ============== -->
+<section>
+  <div class="section-num">03 · Methodology Evolution</div>
+  <h2 class="section-title">어떻게 <em>진화</em>해왔나</h2>
+
+  <p class="section-lead">
+    모든 단계가 같은 방법론적 진화 경로를 따른다. 각 세대는 이전 세대의 약점을 보완하며 등장했다.
+  </p>
+
+  <div class="method-flow">
+    <div class="method-flow-grid">
+      <div class="method-node">
+        <strong>Gen 1</strong>
+        <span>Prompt Engineering</span>
+      </div>
+      <div class="method-arrow">→</div>
+      <div class="method-node">
+        <strong>Gen 2</strong>
+        <span>RAG (Grounding)</span>
+      </div>
+      <div class="method-arrow">→</div>
+      <div class="method-node">
+        <strong>Gen 3</strong>
+        <span>Agentic (Tool Use)</span>
+      </div>
+      <div class="method-arrow">→</div>
+      <div class="method-node">
+        <strong>Gen 4</strong>
+        <span>Training-based</span>
+      </div>
+      <div class="method-arrow">→</div>
+      <div class="method-node" style="border-color: var(--accent); background: var(--bg);">
+        <strong style="color: var(--accent);">Now</strong>
+        <span>Hybrid (Dominant)</span>
+      </div>
+    </div>
+  </div>
+
+  <p>
+    <strong>핵심 통찰:</strong> 어떤 단일 방법론도 혼자선 부족하다. 현재 시스템들은 <em>RAG로 grounding</em>하면서
+    <em>Agentic으로 orchestration</em>하고, <em>도메인별 fine-tuning</em>을 얹는 형태로 수렴 중이다.
+  </p>
+</section>
+
+<!-- ============== PHASE 1: STAGE-BY-STAGE ============== -->
+<section>
+  <div class="section-num">04 · Phase 1 — Creation</div>
+  <h2 class="section-title">Creation: <em>가장 풍부</em>한 도구, <em>가장 불안한</em> 결과</h2>
+
+  <p class="section-lead">
+    Creation은 4개 페이즈 중 가장 활발한 영역이지만, 단계마다 성숙도 편차가 극심하다.
+  </p>
+
+  <!-- S1: Idea Generation -->
+  <div class="stage-block">
+    <div class="stage-visual">
+      <img src="https://worldbench.github.io/assets/auto-research/figures/stages/s1.png" alt="S1 Idea Generation">
+    </div>
+    <div class="stage-content">
+      <span class="stage-tag">Stage 1</span>
+      <h3 class="stage-name">Idea Generation:<br>"표면적 새로움 ≠ <em>실제 가치</em>"</h3>
+
+      <p>LLM이 인간 연구자보다 <strong>novelty 점수가 통계적으로 유의하게 높다(p&lt;0.05)</strong>. 충격적인 결과처럼 보이지만, 이게 함정이다.</p>
+
+      <div class="insight-box">
+        <h4>Ideation-Execution Gap</h4>
+        <p>구현 후 아이디어 점수 하락폭: 인간 <span class="num-highlight">-0.63</span> vs AI <span class="num-highlight">-1.98</span>. AI 아이디어는 <em>구현하면 무너진다</em>.</p>
+      </div>
+
+      <div class="insight-box">
+        <h4>Artificial Hivemind 현상</h4>
+        <p>에이전트를 아무리 늘려도 LLM 아이디어는 좁은 공간에 클러스터링된다. <strong>다양성 붕괴는 구조적 문제</strong>다 — 스케일링으로 해결되지 않는다.</p>
+      </div>
+
+      <div class="insight-box">
+        <h4>LLM-as-Judge의 역설</h4>
+        <p>novelty 점수와 실제 임팩트가 <span class="num-highlight">ρ = −0.29</span> — AI 심사관은 <em>진짜 혁신</em>이 아니라 <em>혁신처럼 보이는 것</em>을 선호한다.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- S2: Literature Review -->
+  <div class="stage-block">
+    <div class="stage-visual">
+      <img src="https://worldbench.github.io/assets/auto-research/figures/stages/s2.png" alt="S2 Literature Review">
+    </div>
+    <div class="stage-content">
+      <span class="stage-tag">Stage 2</span>
+      <h3 class="stage-name">Literature Review:<br><em>가장 빠르게</em> 성숙 중</h3>
+
+      <p>4세대(단일패스 → 구조화 → 멀티에이전트 → 에디터 통합)가 단 <strong>2년 만에</strong> 모두 등장. 모든 시스템이 같은 아키텍처로 수렴 중이다:</p>
+
+      <div class="method-flow" style="margin: 24px 0;">
+        <div class="method-flow-grid" style="font-size: 13px;">
+          <div class="method-node"><span>plan</span></div>
+          <div class="method-arrow">→</div>
+          <div class="method-node"><span>retrieve</span></div>
+          <div class="method-arrow">→</div>
+          <div class="method-node"><span>read</span></div>
+          <div class="method-arrow">→</div>
+          <div class="method-node"><span>update</span></div>
+          <div class="method-arrow">→</div>
+          <div class="method-node"><span>synthesize</span></div>
+        </div>
+      </div>
+
+      <div class="insight-box">
+        <h4>Citation Fidelity Bottleneck</h4>
+        <p>ScholarCopilot의 top-1 인용 정확도는 <span class="num-highlight">40.1%</span>. 그럴듯한 related work는 잘 쓰지만, 정확한 출처 매칭은 여전히 약점.</p>
+      </div>
+
+      <p><strong>환각의 진화:</strong> 명백한 조작 → <em>미묘한 잘못된 grounding</em>. 인용은 있는데 실제로 그 주장을 지지하지 않는 형태. 더 위험하다.</p>
+    </div>
+  </div>
+
+  <!-- S3: Coding & Experiments -->
+  <div class="stage-block">
+    <div class="stage-visual">
+      <img src="https://worldbench.github.io/assets/auto-research/figures/stages/s3.png" alt="S3 Coding and Experiments">
+    </div>
+    <div class="stage-content">
+      <span class="stage-tag">Stage 3 · 🚨 가장 중요</span>
+      <h3 class="stage-name">Coding & Experiments:<br>가장 <em>날카로운 능력 단절</em></h3>
+
+      <p>이 단계가 논문 전체에서 가장 충격적인 데이터를 담고 있다.</p>
+
+      <div class="contrast-stats">
+        <div class="contrast-side good">
+          <div class="contrast-num">76%</div>
+          <div class="contrast-label">SWE-bench Verified<br>(일반 코딩)</div>
+        </div>
+        <div class="contrast-vs">vs.</div>
+        <div class="contrast-side bad">
+          <div class="contrast-num">37%</div>
+          <div class="contrast-label">ResearchCodeBench<br>(새로운 ML 코드)</div>
+        </div>
+      </div>
+
+      <p>같은 모델인데 <strong>패턴매칭이 안 되는 진짜 연구 코드에선 반토막</strong>. 그리고 더 무서운 건 오류의 성격이다:</p>
+
+      <div class="insight-box">
+        <h4>Semantic Failure</h4>
+        <p>오류의 <span class="num-highlight">58.6%</span>가 semantic 오류 — 코드는 정상 실행되는데 <em>틀린 알고리즘</em>을 구현한다. 결과 파일은 멀쩡해 보인다.</p>
+      </div>
+
+      <div class="insight-box">
+        <h4>Verification Deficit</h4>
+        <p>자율 실험 결과의 <span class="num-highlight">80%가 fabricated</span>이고, 다운스트림 리뷰는 그중 절반밖에 못 잡는다. <strong>검증 적자가 누적</strong>된다.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- S4: Tables & Figures -->
+  <div class="stage-block">
+    <div class="stage-visual">
+      <img src="https://worldbench.github.io/assets/auto-research/figures/stages/s4.png" alt="S4 Tables and Figures">
+    </div>
+    <div class="stage-content">
+      <span class="stage-tag">Stage 4</span>
+      <h3 class="stage-name">Tables & Figures:<br>"보기엔 멀쩡, <em>의미는 틀림</em>"</h3>
+
+      <p>가장 늦게 출발했지만 가장 빠르게 성장 중. 그러나 단순 시각화 너머에선 여전히 약하다.</p>
+
+      <div class="insight-box">
+        <h4>LaTeX 복잡도와 정확도</h4>
+        <p>TeXpert 벤치마크 — 난이도가 올라가면 <span class="num-highlight">78.8% → 15%</span>로 급락. 표 병합 셀, 중첩 환경 등에서 무너진다.</p>
+      </div>
+
+      <p><strong>핵심 교훈:</strong> <em>시각적 그럴듯함 ≠ 과학적 정확성</em>. AI가 만든 figure·table은 의미 단위로 검증해야 한다. Result plot은 90% 이상 성공하지만, framework figure나 ablation table은 여전히 인간이 만들어야 한다.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============== PHASE 2: WRITING ============== -->
+<section>
+  <div class="section-num">05 · Phase 2 — Writing</div>
+  <h2 class="section-title">Writing: <em>유창함의 함정</em></h2>
+
+  <p class="section-lead">
+    가장 널리 채택된 단계. 그러나 가장 위험한 단계이기도 하다.
+  </p>
+
+  <div class="stage-block">
+    <div class="stage-visual">
+      <img src="https://worldbench.github.io/assets/auto-research/figures/stages/s5.png" alt="S5 Paper Writing">
+    </div>
+    <div class="stage-content">
+      <span class="stage-tag">Stage 5</span>
+      <h3 class="stage-name">Paper Writing</h3>
+
+      <div class="insight-box">
+        <h4>일상적 사용의 증거</h4>
+        <p>컴퓨터과학 논문 초록의 <span class="num-highlight">17.5%</span>에서 AI 수정 흔적 발견(생물의학은 13.5%). Nature 설문 — 연구자 <span class="num-highlight">절반 이상</span>이 AI 글쓰기 도움 받음.</p>
+      </div>
+
+      <div class="insight-box">
+        <h4>"Valley of Mediocrity"</h4>
+        <p>자동 생성 논문 점수: ICLR 기준 <span class="num-highlight">5.36</span> (accept 평균 5.69). 유창성은 충족, <em>논증 깊이</em>는 부족. 진짜 같아 보이지만 실험 깊이·리뷰어 anticipation이 빠져있다.</p>
+      </div>
+
+      <div class="insight-box">
+        <h4>Productivity ≠ Quality</h4>
+        <p>AI는 산출량은 늘려주지만, <strong>복잡한 AI 문체는 오히려 acceptance를 낮춘다</strong>. 더 많이 쓰는 게 더 좋은 게 아니다.</p>
+      </div>
+
+      <p><strong>정책 트렌드:</strong> "Detect (탐지)" → "<em>Declare (선언)</em>" — 탐지기 false positive가 너무 높아서 (비영어권 학자에게 특히 가혹). 학회들은 이제 AI 사용 자체를 막기보다 <strong>공개를 요구</strong>하는 방향으로 전환 중.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============== PHASE 3: VALIDATION ============== -->
+<section>
+  <div class="section-num">06 · Phase 3 — Validation</div>
+  <h2 class="section-title">Validation: <em>적대적</em> 평가의 영역</h2>
+
+  <div class="stage-block">
+    <div class="stage-visual">
+      <img src="https://worldbench.github.io/assets/auto-research/figures/stages/s6.png" alt="S6 Peer Review">
+    </div>
+    <div class="stage-content">
+      <span class="stage-tag">Stage 6</span>
+      <h3 class="stage-name">Peer Review:<br>리뷰는 잘 쓰지만, <em>판단은 약하다</em></h3>
+
+      <p>자동 리뷰는 그럴듯한 비판을 생성하지만:</p>
+
+      <ul style="list-style: none; margin: 24px 0;">
+        <li style="padding: 12px 0; border-bottom: 1px dashed var(--line); color: var(--ink);">→ <strong>방법론적 결함을 놓침</strong></li>
+        <li style="padding: 12px 0; border-bottom: 1px dashed var(--line); color: var(--ink);">→ 약한 논문을 <em>과대 평가</em>하는 leniency 편향</li>
+        <li style="padding: 12px 0; border-bottom: 1px dashed var(--line); color: var(--ink);">→ <strong>Adversarial 공격에 취약</strong> — 논문에 숨겨진 흰 글씨 프롬프트로 리뷰 점수 조작 가능</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="stage-block">
+    <div class="stage-visual">
+      <img src="https://worldbench.github.io/assets/auto-research/figures/stages/s7.png" alt="S7 Rebuttal">
+    </div>
+    <div class="stage-content">
+      <span class="stage-tag">Stage 7 · 가장 저평가된 영역</span>
+      <h3 class="stage-name">Rebuttal & Revision</h3>
+
+      <p>실무적 중요도에 비해 도구화가 가장 덜 된 영역. <strong>Commitment Checklist 벤치마크</strong>는 흥미로운 사실을 드러냈다:</p>
+
+      <div class="insight-box">
+        <h4>지키지 못하는 약속</h4>
+        <p>저자들이 리버틀에서 약속한 수정사항 중 <span class="num-highlight">~25%</span>가 실제로 이행되지 않는다. 평균 11.8개 약속 중 약 3개가 공수표.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== PHASE 4: DISSEMINATION ============== -->
+<section>
+  <div class="section-num">07 · Phase 4 — Dissemination</div>
+  <h2 class="section-title">Dissemination: <em>Paper2X</em>의 폭발</h2>
+
+  <p class="section-lead">
+    논문은 끝이 아니라 시작이다. 포스터·슬라이드·영상·소셜·에이전트로 변환되며 독립된 지식 산출물이 된다.
+  </p>
+
+  <div class="phases-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+    <div class="phase-card">
+      <img src="https://worldbench.github.io/assets/auto-research/figures/stages/paper2poster.png" alt="Paper2Poster" style="width: 100%; height: 140px; object-fit: contain; margin-bottom: 16px; background: var(--bg-3); border-radius: 4px; padding: 12px;">
+      <div class="phase-label">Paper2Poster</div>
+      <div class="phase-name" style="font-size: 22px;">포스터</div>
+      <div class="phase-desc">단일 캔버스에 정보 밀도·레이아웃·미학을 동시 충족. $0.005/포스터.</div>
+    </div>
+
+    <div class="phase-card">
+      <img src="https://worldbench.github.io/assets/auto-research/figures/stages/paper2slides.png" alt="Paper2Slides" style="width: 100%; height: 140px; object-fit: contain; margin-bottom: 16px; background: var(--bg-3); border-radius: 4px; padding: 12px;">
+      <div class="phase-label">Paper2Slides</div>
+      <div class="phase-name" style="font-size: 22px;">슬라이드</div>
+      <div class="phase-desc">핵심 메시지 추출 + 논리적 흐름 배치 + 시각화 변환을 자동화.</div>
+    </div>
+
+    <div class="phase-card">
+      <img src="https://worldbench.github.io/assets/auto-research/figures/stages/paper2video.png" alt="Paper2Video" style="width: 100%; height: 140px; object-fit: contain; margin-bottom: 16px; background: var(--bg-3); border-radius: 4px; padding: 12px;">
+      <div class="phase-label">Paper2Video</div>
+      <div class="phase-name" style="font-size: 22px;">영상</div>
+      <div class="phase-desc">대본·내레이션·애니메이션·자막을 동기화. 가장 어려운 변환.</div>
+    </div>
+
+    <div class="phase-card">
+      <img src="https://worldbench.github.io/assets/auto-research/figures/stages/paper2social.png" alt="Paper2Social" style="width: 100%; height: 140px; object-fit: contain; margin-bottom: 16px; background: var(--bg-3); border-radius: 4px; padding: 12px;">
+      <div class="phase-label">Paper2Social</div>
+      <div class="phase-name" style="font-size: 22px;">소셜</div>
+      <div class="phase-desc">플랫폼별 톤·길이·청중을 맞춤. 단순화하되 왜곡하지 않기.</div>
+    </div>
+
+    <div class="phase-card">
+      <img src="https://worldbench.github.io/assets/auto-research/figures/stages/paper2agent.png" alt="Paper2Agent" style="width: 100%; height: 140px; object-fit: contain; margin-bottom: 16px; background: var(--bg-3); border-radius: 4px; padding: 12px;">
+      <div class="phase-label">Paper2Agent</div>
+      <div class="phase-name" style="font-size: 22px;">에이전트</div>
+      <div class="phase-desc">독자가 논문과 대화. MCP 통합·인용 추적·인터랙티브 데모.</div>
+    </div>
+  </div>
+
+  <p style="margin-top: 40px;"><strong>핵심 위험:</strong> 발표 자료가 <em>증거 이상으로 결과를 단순화</em>하면 잘못된 인식을 확산시킨다. 가장 마지막 단계지만 신뢰성은 가장 중요할 수 있다.</p>
+</section>
+
+<!-- ============== CROSS-CUTTING INSIGHTS — CLIMAX ============== -->
+<section>
+  <div class="section-num">08 · The Climax</div>
+  <h2 class="section-title">5가지 <em>Cross-Cutting Insights</em><br>— 발표의 핵심</h2>
+
+  <p class="section-lead">
+    이 5가지가 논문 전체를 관통하는 메시지다. <strong>이것만 외워가도 충분하다.</strong>
+  </p>
+
+  <div class="insights-grid">
+    <div class="insight-card">
+      <div class="insight-card-num">01</div>
+      <h3>Artifact 생성이<br>Scientific Verification을<br>추월했다</h3>
+      <p>모든 단계에서 같은 패턴 — <em>그럴듯한 산출물</em>은 빠르게 만들지만 <em>그게 맞는지 증명</em>하는 건 여전히 느리다. 이 갭이 모든 위험의 근원.</p>
+    </div>
+
+    <div class="insight-card">
+      <div class="insight-card-num">02</div>
+      <h3>Human-Governed<br>Collaboration이<br>가장 신뢰할 만하다</h3>
+      <p>완전 자동화가 아닌 <em>인간이 책임을 진 협업</em>. AI는 mechanical friction을 줄이고, 인간은 judgment·interpretation·accountability를 유지.</p>
+    </div>
+
+    <div class="insight-card">
+      <div class="insight-card-num">03</div>
+      <h3>개방형 연구 태스크에서<br>명확한 <em>능력 경계</em></h3>
+      <p>구조화·grounded한 태스크 → 잘함. <strong>새로움·암묵적 도메인 지식·long-horizon 추론</strong> → 급격히 무너진다. 경계가 명확하다.</p>
+    </div>
+
+    <div class="insight-card">
+      <div class="insight-card-num">04</div>
+      <h3>효과적 시스템은<br>Layered Architecture로<br>수렴한다</h3>
+      <p>Exploration → Tool-based execution → Verification. <strong>모델 스케일보다 orchestration·provenance·feedback 설계가 더 중요</strong>해지고 있다.</p>
+    </div>
+
+    <div class="insight-card">
+      <div class="insight-card-num">05</div>
+      <h3>이제 탐지가 아니라<br><em>거버넌스</em> 문제다</h3>
+      <p>탐지기는 false positive가 너무 높다. 새로운 핵심 질문: 누가 사용했는가(Disclosure)? 누가 책임지는가(Attribution)? 진실성은 보존됐는가(Integrity)?</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============== TAKEAWAYS ============== -->
+<section class="takeaway-section">
+  <div class="section-num" style="text-align: center;">09 · Practical Takeaways</div>
+  <h2 class="section-title" style="text-align: center; margin: 0 auto 48px;">
+    우리가 <em>가져갈</em> 실용적 시사점
+  </h2>
+
+  <div class="takeaway-grid">
+    <div class="takeaway-column">
+      <h3>AI 연구자/엔지니어로서</h3>
+      <ol>
+        <li><strong>벤치마크 함정 조심.</strong> SWE-bench 76%여도 실제 연구 코드에선 37%. 일반 코딩 벤치 점수만 보지 말 것.</li>
+        <li><strong>Hybrid가 답.</strong> Pure prompting도, pure agentic도, pure fine-tuning도 모두 한계. 결합이 dominant.</li>
+        <li><strong>검증 레이어를 별도 설계.</strong> 생성기와 같은 모델로 검증하면 같은 오류 패턴에 빠진다 — semantic error를 놓친다.</li>
+        <li><strong>Trajectory data가 model scale만큼 중요.</strong> 특히 deep research/agent 영역에서.</li>
+        <li><strong>LLM-as-Judge를 맹신 금지.</strong> 진짜 가치가 아닌 <em>가치처럼 보이는 것</em>을 보상한다.</li>
+      </ol>
+    </div>
+
+    <div class="takeaway-column">
+      <h3>연구자로서</h3>
+      <ol>
+        <li><strong>시간 절약 도구로는 매우 유용.</strong> Literature, polishing, viz에 적극 활용 — 시간을 사람의 판단으로 옮기자.</li>
+        <li><strong>판단 위임은 위험.</strong> 아이디어 선택·실험 해석·논증 구성은 여전히 사람의 영역.</li>
+        <li><strong>AI 사용을 선언하는 게 새로운 norm.</strong> 숨기는 시대는 끝났다. 어떻게 썼는지 밝히는 시대로.</li>
+        <li><strong>AI가 만든 figure·table은 의미 단위로 검증.</strong> 보기 좋다고 맞는 게 아니다. ablation table은 특히 위험.</li>
+        <li><strong>리버틀의 약속을 끝까지 지킬 것.</strong> 25%가 공수표라는 데이터를 우리가 만들지 말자.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============== DISCUSSION ============== -->
+<section class="discussion">
+  <div class="section-num">10 · Discussion Prompts</div>
+  <h2 class="section-title">세미나에서 <em>던질</em> 질문들</h2>
+
+  <ul>
+    <li>
+      <span class="q-mark">Q1</span>
+      <span class="q-text">
+        "AI Scientist v2가 학회에 accept됐다"는 게 진짜 의미하는 것은? 학회 심사 기준이 이미 LLM-detectable한 수준이라는 뜻인가, 아니면 정말 LLM이 그 수준에 도달한 것인가?
+      </span>
+    </li>
+    <li>
+      <span class="q-mark">Q2</span>
+      <span class="q-text">
+        Diversity collapse가 <em>구조적</em>이라면, RLHF로 훈련된 모델들이 본질적으로 <em>frontier research</em>에 부적합하다는 의미일까?
+      </span>
+    </li>
+    <li>
+      <span class="q-mark">Q3</span>
+      <span class="q-text">
+        "Valley of Mediocrity"가 두려운 이유 — <em>그럴듯한 평범한 논문이 대량생산</em>되면 진짜 혁신은 어떻게 가시화될 것인가?
+      </span>
+    </li>
+    <li>
+      <span class="q-mark">Q4</span>
+      <span class="q-text">
+        우리 분야에서 <em>"AI가 가장 빨리 인간을 대체할 단계"</em>와 <em>"절대 대체 못 할 단계"</em>는 어디인가?
+      </span>
+    </li>
+    <li>
+      <span class="q-mark">Q5</span>
+      <span class="q-text">
+        Semantic error의 58.6%를 어떻게 잡을 것인가? 같은 모델 패밀리로는 안 잡힌다 — 그렇다면 <em>이질적 검증 시스템</em>은 어떻게 구축할 것인가?
+      </span>
+    </li>
+  </ul>
+</section>
+
+<!-- ============== FOOTER ============== -->
+<footer>
+  <p style="font-size: 14px; margin-bottom: 20px; color: var(--ink); font-family: var(--serif); font-style: italic;">
+    "AI는 연구의 형식을 만들 수 있다.<br>그러나 본질은 여전히 우리가 책임져야 한다."
+  </p>
+  <p><a href="https://arxiv.org/abs/2605.18661">arXiv:2605.18661</a> · AI for Auto-Research: Roadmap & User Guide</p>
+  <p>Lingdong Kong, Xian Sun, Wei Chow et al. · May 2026</p>
+  <p style="margin-top: 24px;">Project Page · <a href="https://worldbench.github.io/awesome-ai-auto-research">worldbench.github.io/awesome-ai-auto-research</a></p>
+</footer>
+
+<script>
+  // Intersection observer for fade-in animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('section').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(40px)';
+    el.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+    observer.observe(el);
+  });
+</script>
+
+</body>
+</html>
